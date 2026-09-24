@@ -1,0 +1,237 @@
+<div class="eyebrow">ADMINISTRACIÓN / CATÁLOGOS</div>
+<div class="page-heading">
+  <div>
+    <h1>{{ title }}</h1>
+    <p>
+      Consulta el catálogo de {{ title.toLowerCase() }} y su información
+      geográfica.
+    </p>
+  </div>
+  <span class="count-badge">Solo consulta</span>
+</div>
+@if (lookupError() && resource() !== "paises") {
+  <div class="alert alert-warning" role="alert">
+    No se pudieron cargar los nombres y opciones de ubicación.
+    {{ lookupError() }}
+    <button class="btn btn-sm btn-outline-secondary" (click)="loadLookups()">
+      Recargar opciones
+    </button>
+  </div>
+}
+<section class="surface mb-4" aria-labelledby="catalog-filters">
+  <div class="surface-heading">
+    <h2 id="catalog-filters">Buscar {{ title.toLowerCase() }}</h2>
+  </div>
+  <form class="p-4" [formGroup]="filters" (ngSubmit)="search()">
+    <div class="row g-3">
+      <div class="col-md-4 col-xl-2">
+        <label class="form-label" for="catalog-code">Código</label
+        ><input
+          id="catalog-code"
+          type="number"
+          min="1"
+          step="1"
+          class="form-control"
+          formControlName="codigo"
+          placeholder="Ej. 170"
+          [class.is-invalid]="
+            filters.controls.codigo.touched && filters.controls.codigo.invalid
+          "
+          aria-describedby="code-error"
+        />
+        @if (
+          filters.controls.codigo.touched && filters.controls.codigo.invalid
+        ) {
+          <div class="invalid-feedback" id="code-error">
+            Ingresa un entero positivo válido.
+          </div>
+        }
+      </div>
+      <div
+        class="col-md-8"
+        [class.col-xl-10]="resource() === 'paises'"
+        [class.col-xl-4]="resource() !== 'paises'"
+      >
+        <label class="form-label" for="catalog-name">Nombre</label
+        ><input
+          id="catalog-name"
+          class="form-control"
+          formControlName="nombre"
+          maxlength="100"
+          placeholder="Buscar por nombre"
+        />
+      </div>
+      @if (resource() !== "paises") {
+        <div
+          class="col-md-6"
+          [class.col-xl-6]="resource() === 'departamentos'"
+          [class.col-xl-3]="resource() === 'ciudades'"
+        >
+          <label class="form-label" for="catalog-country">País</label
+          ><select
+            id="catalog-country"
+            class="form-select"
+            formControlName="paisCodigo"
+          >
+            <option [ngValue]="null">Todos los países</option>
+            @for (item of countries(); track item.codigo) {
+              <option [ngValue]="item.codigo">{{ item.nombre }}</option>
+            }
+          </select>
+        </div>
+      }
+      @if (resource() === "ciudades") {
+        <div class="col-md-6 col-xl-3">
+          <label class="form-label" for="catalog-department">Departamento</label
+          ><select
+            id="catalog-department"
+            class="form-select"
+            formControlName="departamentoCodigo"
+          >
+            <option [ngValue]="null">Todos los departamentos</option>
+            @for (item of availableDepartments; track item.codigo) {
+              <option [ngValue]="item.codigo">{{ item.nombre }}</option>
+            }
+          </select>
+        </div>
+      }
+    </div>
+    <div class="filter-actions">
+      <button class="btn btn-primary" [disabled]="loading()">Buscar</button
+      ><button
+        class="btn btn-outline-secondary"
+        type="button"
+        (click)="clear()"
+      >
+        Limpiar filtros
+      </button>
+    </div>
+  </form>
+</section>
+@if (error()) {
+  <div class="alert alert-danger" role="alert">
+    {{ error() }}
+    <button class="btn btn-sm btn-outline-danger" (click)="retry()">
+      Reintentar consulta
+    </button>
+  </div>
+}
+<section
+  class="surface"
+  aria-labelledby="catalog-results"
+  [attr.aria-busy]="loading()"
+>
+  <div class="surface-heading">
+    <div class="d-flex align-items-center gap-2">
+      <h2 id="catalog-results">Catálogo de {{ title.toLowerCase() }}</h2>
+      <span class="count-badge">{{ total() }}</span>
+    </div>
+  </div>
+  @if (loading()) {
+    <div class="empty-state" role="status">
+      <span class="spinner-border text-primary mb-3"></span>
+      <p>Cargando {{ title.toLowerCase() }}…</p>
+    </div>
+  } @else if (error()) {
+    <div class="empty-state">
+      <h3>No se pudo cargar el catálogo</h3>
+      <p>Intenta consultar de nuevo.</p>
+    </div>
+  } @else if (!rows().length) {
+    <div class="empty-state">
+      <div class="empty-icon" aria-hidden="true">◎</div>
+      <h3>No hay resultados</h3>
+      <p>Prueba con otro nombre, código o ubicación.</p>
+    </div>
+  } @else {
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">Código</th>
+            <th scope="col">Nombre</th>
+            @if (resource() === "paises") {
+              <th scope="col">ISO (3 letras)</th>
+              <th scope="col">ISO (2 letras)</th>
+              <th scope="col">Capital</th>
+            } @else {
+              <th scope="col">País</th>
+            }
+            @if (resource() === "ciudades") {
+              <th scope="col">Departamento</th>
+            } @else {
+              <th scope="col" class="text-end">Consultar</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of rows(); track item.codigo) {
+            <tr>
+              <td>{{ item.codigo }}</td>
+              <td>
+                <strong class="client-name">{{ item.nombre }}</strong>
+              </td>
+              @if (resource() === "paises") {
+                <td>{{ item.iso1 || "—" }}</td>
+                <td>{{ item.iso2 || "—" }}</td>
+                <td>{{ item.capital || "—" }}</td>
+              } @else {
+                <td>{{ countryName(item.paisCodigo) }}</td>
+              }
+              @if (resource() === "ciudades") {
+                <td>{{ departmentName(item.departamentoCodigo) }}</td>
+              } @else {
+                <td class="text-end">
+                  @if (resource() === "paises") {
+                    <a
+                      class="btn btn-sm btn-outline-secondary text-nowrap"
+                      routerLink="/departamentos"
+                      [queryParams]="{ paisCodigo: item.codigo }"
+                      [attr.aria-label]="'Ver departamentos de ' + item.nombre"
+                      >Ver departamentos</a
+                    >
+                  } @else {
+                    <a
+                      class="btn btn-sm btn-outline-secondary text-nowrap"
+                      routerLink="/ciudades"
+                      [queryParams]="{
+                        paisCodigo: item.paisCodigo,
+                        departamentoCodigo: item.codigo,
+                      }"
+                      [attr.aria-label]="'Ver ciudades de ' + item.nombre"
+                      >Ver ciudades</a
+                    >
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  <div class="table-footer">
+    <span class="subtle"
+      >{{ first }}–{{ last }} de {{ total() }} registros</span
+    >
+    <nav
+      aria-label="Paginación del catálogo"
+      class="d-flex align-items-center gap-3"
+    >
+      <button
+        class="btn btn-sm btn-outline-secondary"
+        [disabled]="page === 1 || loading() || !!error()"
+        (click)="changePage(page - 1)"
+      >
+        Anterior</button
+      ><span class="subtle">{{ page }} / {{ pages }}</span
+      ><button
+        class="btn btn-sm btn-outline-secondary"
+        [disabled]="page >= pages || loading() || !!error()"
+        (click)="changePage(page + 1)"
+      >
+        Siguiente
+      </button>
+    </nav>
+  </div>
+</section>

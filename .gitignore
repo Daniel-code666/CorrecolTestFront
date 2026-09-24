@@ -1,0 +1,50 @@
+# Dependencias y caché de paquetes
+/node_modules/
+/.npm-cache/
+
+# Compilación y caché de Angular / TypeScript
+/dist/
+/out-tsc/
+/.angular/
+/bazel-out/
+*.tsbuildinfo
+
+# Pruebas, cobertura y reportes
+/coverage/
+/artifacts/
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# Archivos temporales y registros
+/tmp/
+/temp/
+*.log
+*.pid
+*.pid.lock
+
+# Configuración local y secretos
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.template
+
+# Editores (conservar configuración compartida de VS Code)
+/.idea/
+/.vs/
+/.vscode/*
+!/.vscode/settings.json
+!/.vscode/tasks.json
+!/.vscode/launch.json
+!/.vscode/extensions.json
+*.suo
+*.user
+*.swp
+*.swo
+*~
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini
