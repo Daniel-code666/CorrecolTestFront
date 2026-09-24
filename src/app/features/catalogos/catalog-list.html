@@ -3,12 +3,29 @@
   <div>
     <h1>{{ title }}</h1>
     <p>
-      Consulta el catálogo de {{ title.toLowerCase() }} y su información
+      Administra el catálogo de {{ title.toLowerCase() }} y su información
       geográfica.
     </p>
   </div>
-  <span class="count-badge">Solo consulta</span>
+  <button
+    type="button"
+    class="btn btn-primary"
+    (click)="editing.set({ code: null })"
+  >
+    ＋ {{ createLabel }}
+  </button>
 </div>
+@if (notice()) {
+  <div class="alert alert-success d-flex justify-content-between" role="status">
+    {{ notice()
+    }}<button
+      type="button"
+      class="btn-close"
+      aria-label="Cerrar mensaje"
+      (click)="notice.set('')"
+    ></button>
+  </div>
+}
 @if (lookupError() && resource() !== "paises") {
   <div class="alert alert-warning" role="alert">
     No se pudieron cargar los nombres y opciones de ubicación.
@@ -95,6 +112,18 @@
           </select>
         </div>
       }
+      <div class="col-md-4">
+        <label class="form-label" for="catalog-state">Estado</label
+        ><select
+          id="catalog-state"
+          class="form-select"
+          formControlName="active"
+        >
+          <option value="true">Activos</option>
+          <option value="false">Inactivos</option>
+          <option value="">Todos los estados</option>
+        </select>
+      </div>
     </div>
     <div class="filter-actions">
       <button class="btn btn-primary" [disabled]="loading()">Buscar</button
@@ -151,8 +180,8 @@
             <th scope="col">Código</th>
             <th scope="col">Nombre</th>
             @if (resource() === "paises") {
-              <th scope="col">ISO (3 letras)</th>
-              <th scope="col">ISO (2 letras)</th>
+              <th scope="col">ISO 1</th>
+              <th scope="col">ISO 2</th>
               <th scope="col">Capital</th>
             } @else {
               <th scope="col">País</th>
@@ -162,6 +191,8 @@
             } @else {
               <th scope="col" class="text-end">Consultar</th>
             }
+            <th scope="col">Estado</th>
+            <th scope="col" class="text-end">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -204,6 +235,31 @@
                   }
                 </td>
               }
+              <td>
+                <span class="state-badge" [class.inactive]="!item.active">{{
+                  item.active ? "Activo" : "Inactivo"
+                }}</span>
+              </td>
+              <td class="text-end text-nowrap">
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  (click)="editing.set({ code: item.codigo })"
+                  [attr.aria-label]="
+                    (item.active ? 'Editar ' : 'Consultar ') + item.nombre
+                  "
+                >
+                  {{ item.active ? "Editar" : "Consultar" }}
+                </button>
+                @if (item.active) {
+                  <button
+                    class="btn btn-sm btn-link text-danger"
+                    (click)="confirmDelete(item)"
+                    [attr.aria-label]="'Desactivar ' + item.nombre"
+                  >
+                    Desactivar
+                  </button>
+                }
+              </td>
             </tr>
           }
         </tbody>
@@ -211,6 +267,22 @@
     </div>
   }
   <div class="table-footer">
+    <div class="d-flex align-items-center gap-2">
+      <label for="catalog-size" class="subtle text-nowrap"
+        >Registros por página</label
+      ><select
+        id="catalog-size"
+        #sizeSelect
+        class="form-select form-select-sm w-auto"
+        [value]="pageSize"
+        [disabled]="loading()"
+        (change)="changePageSize(sizeSelect.value)"
+      >
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="30">30</option>
+      </select>
+    </div>
     <span class="subtle"
       >{{ first }}–{{ last }} de {{ total() }} registros</span
     >
@@ -235,3 +307,48 @@
     </nav>
   </div>
 </section>
+@if (editing(); as editor) {
+  <app-catalog-form
+    [resource]="resource()"
+    [code]="editor.code"
+    (closed)="editing.set(null)"
+    (saved)="onSaved($event)"
+  />
+}
+@if (deleting(); as item) {
+  <dialog
+    appModal
+    class="surface confirmation"
+    aria-labelledby="delete-catalog-title"
+    aria-describedby="delete-catalog-description"
+    (cancel)="closeDelete($event)"
+  >
+    <h2 id="delete-catalog-title">Desactivar registro</h2>
+    <p id="delete-catalog-description">
+      ¿Deseas desactivar <strong>{{ item.nombre }}</strong
+      >? Sus datos se conservarán y dejará de estar disponible para nuevas
+      selecciones. No se puede desactivar si tiene clientes asociados o
+      registros dependientes activos.
+    </p>
+    @if (deleteError()) {
+      <div class="alert alert-danger" role="alert">{{ deleteError() }}</div>
+    }
+    <div class="d-flex justify-content-end gap-2">
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        [disabled]="deletingBusy()"
+        (click)="closeDelete()"
+      >
+        Cancelar</button
+      ><button
+        type="button"
+        class="btn btn-danger"
+        [disabled]="deletingBusy()"
+        (click)="deactivate()"
+      >
+        {{ deletingBusy() ? "Desactivando…" : "Confirmar desactivación" }}
+      </button>
+    </div>
+  </dialog>
+}

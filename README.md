@@ -37,14 +37,17 @@ El script `scripts/integrate-compose.ps1` permite configurar esta integración e
 
 - `core`: utilidades de HTTP, errores y diálogo accesible.
 - `features/clientes`: modelos, servicio HTTP, listado y formulario compartido.
-- `features/catalogos`: consultas geográficas, con recuperación de todas las páginas.
+- `features/catalogos`: consultas geográficas, servicio CRUD y formulario compartido para países, departamentos y ciudades, con recuperación de todas las páginas de opciones.
 - `app`: estructura visual y rutas cargadas bajo demanda.
 
 El estado se mantiene en los componentes mediante signals y formularios reactivos; no se necesita una biblioteca global de estado. Los servicios encapsulan HTTP. Bootstrap aporta la cuadrícula y controles; Angular administra las interacciones sin JavaScript de Bootstrap ni jQuery.
 
 ## Funciones y reglas
 
-- Consultas independientes de países, departamentos y ciudades desde el menú. Búsqueda por código/nombre, filtros de ubicación y paginación del servidor. Los enlaces de países y departamentos abren sus registros dependientes. Los catálogos son de solo lectura, conforme a la API.
+- Gestión de países, departamentos y ciudades desde el menú: crear, consultar, editar y desactivar. Búsqueda por código/nombre, filtros de ubicación y estado, y paginación del servidor con 10, 20 o 30 registros. Los enlaces de países y departamentos abren sus registros dependientes.
+- Los códigos de catálogos se asignan al crear y quedan bloqueados en edición, al igual que el país de un departamento y el departamento de una ciudad. Los países permiten editar nombre, ISO 1 (hasta 5 caracteres), ISO 2 (hasta 3) y capital; departamentos y ciudades permiten editar el nombre. Nombres y capital admiten hasta 100 caracteres.
+- El borrado de catálogos es lógico y requiere confirmación. Los inactivos se pueden consultar, pero no editar ni reactivar. La API rechaza la desactivación con clientes asociados (incluso inactivos) o dependencias activas; el diálogo muestra el motivo y conserva los datos.
+- Los formularios de creación y los clientes cargan opciones activas actualizadas, sin una caché persistente que oculte cambios. Las consultas incluyen nombres de padres inactivos para conservar el contexto de registros históricos.
 - Listado paginado, filtros por identificación, razón social, tipo y estado.
 - Creación y edición, validaciones, mensajes de éxito y errores del servidor.
 - País, departamento y ciudad en cascada. Se consultan todas las páginas; las selecciones dependientes se limpian al cambiar su padre y se ignoran respuestas obsoletas.
@@ -62,5 +65,7 @@ npx playwright test
 ```
 
 La prueba de catálogo verifica la carga de 125 municipios en dos páginas. La prueba de navegador requiere el conjunto de contenedores en ejecución y Microsoft Edge instalado. Crea un cliente con prefijo `QA`, comprueba edición, exportación y desactivación, y lo conserva inactivo porque la API solo permite borrado lógico. Las capturas se guardan en `artifacts/`.
+
+`tests/catalog-crud.spec.ts` verifica el CRUD real de un país, un departamento y una ciudad de prueba, los campos inmutables, el rechazo de duplicados y la restricción de desactivar padres con hijos activos. Los registros creados por la prueba quedan desactivados al terminar; los catálogos existentes no se modifican.
 
 `.npmrc` activa `legacy-peer-deps` debido a un fallo de npm 10 al resolver dependencias opcionales de las herramientas de pruebas. `package-lock.json` fija las versiones reproducibles para desarrollo y Docker.

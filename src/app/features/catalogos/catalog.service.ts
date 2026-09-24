@@ -1,8 +1,11 @@
 import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { expand, reduce, EMPTY, Observable, shareReplay } from "rxjs";
+import { expand, reduce, EMPTY } from "rxjs";
 import { Page, params } from "../../core/api";
 export interface CatalogItem {
+  active: boolean;
+  creationDate?: string;
+  updatedDate?: string | null;
   codigo: number;
   nombre: string;
   paisCodigo?: number;
@@ -12,17 +15,40 @@ export interface CatalogItem {
   capital?: string;
 }
 export type CatalogResource = "paises" | "departamentos" | "ciudades";
+export interface CountryWrite {
+  nombre: string;
+  iso1: string;
+  iso2: string;
+  capital: string;
+}
+export type CatalogUpdate = CountryWrite | { nombre: string };
+export type CatalogCreate =
+  | (CountryWrite & { codigo: number })
+  | { codigo: number; nombre: string; paisCodigo: number }
+  | { codigo: number; nombre: string; departamentoCodigo: number };
 @Injectable({ providedIn: "root" })
 export class CatalogService {
   private http = inject(HttpClient);
-  private countries$: Observable<CatalogItem[]> | undefined;
-  countries() {
-    return (this.countries$ ??= this.all("paises").pipe(
-      shareReplay({ bufferSize: 1, refCount: false }),
-    ));
+  countries(includeInactive = false) {
+    return this.all("paises", includeInactive ? { active: "" } : {});
   }
-  departments(paisCodigo?: number) {
-    return this.all("departamentos", paisCodigo ? { paisCodigo } : {});
+  departments(paisCodigo?: number, includeInactive = false) {
+    return this.all("departamentos", {
+      paisCodigo,
+      ...(includeInactive ? { active: "" } : {}),
+    });
+  }
+  get(resource: CatalogResource, code: number) {
+    return this.http.get<CatalogItem>(`/api/${resource}/${code}`);
+  }
+  create(resource: CatalogResource, data: CatalogCreate) {
+    return this.http.post<CatalogItem>(`/api/${resource}`, data);
+  }
+  update(resource: CatalogResource, code: number, data: CatalogUpdate) {
+    return this.http.put<CatalogItem>(`/api/${resource}/${code}`, data);
+  }
+  deactivate(resource: CatalogResource, code: number) {
+    return this.http.delete<void>(`/api/${resource}/${code}`);
   }
   list(
     resource: CatalogResource,
@@ -35,7 +61,10 @@ export class CatalogService {
   cities(departamentoCodigo: number) {
     return this.all("ciudades", { departamentoCodigo });
   }
-  private all(resource: string, filters: Record<string, number> = {}) {
+  private all(
+    resource: string,
+    filters: Record<string, number | string | undefined> = {},
+  ) {
     const page = (pageNumber: number) =>
       this.http.get<Page<CatalogItem>>(`/api/${resource}`, {
         params: params({ ...filters, pageSize: 100, pageNumber }),

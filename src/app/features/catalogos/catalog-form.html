@@ -1,0 +1,225 @@
+<dialog
+  appModal
+  class="surface catalog-dialog"
+  aria-labelledby="catalog-dialog-title"
+  (cancel)="cancel($event)"
+>
+  <div class="surface-heading">
+    <h2 id="catalog-dialog-title">{{ title }}</h2>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Cerrar formulario"
+      [disabled]="saving()"
+      (click)="close()"
+    ></button>
+  </div>
+  @if (loading()) {
+    <div class="empty-state" role="status">
+      <span class="spinner-border text-primary"></span>
+      <p>Cargando información…</p>
+    </div>
+  }
+  @if (error()) {
+    <div class="alert alert-danger m-3" role="alert">
+      {{ error() }}
+      @if (!initialized() && !loading()) {
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-danger"
+          (click)="initialize()"
+        >
+          Reintentar
+        </button>
+      }
+    </div>
+  }
+  @if (initialized()) {
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <fieldset class="form-section border-0" [disabled]="saving()">
+        @if (readonly) {
+          <p class="alert alert-warning">
+            Este registro está inactivo y solo se puede consultar.
+          </p>
+        } @else if (code() !== null) {
+          <p class="subtle">
+            El código y la ubicación se conservan. Puedes actualizar los datos
+            descriptivos.
+          </p>
+        } @else {
+          <p class="subtle">
+            Todos los campos son obligatorios. El código y la ubicación no se
+            podrán cambiar después.
+          </p>
+        }
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label" for="edit-catalog-code">Código</label
+            ><input
+              id="edit-catalog-code"
+              type="number"
+              min="1"
+              [max]="maxCode"
+              step="1"
+              class="form-control"
+              formControlName="codigo"
+              [class.is-invalid]="invalid('codigo')"
+              aria-describedby="edit-code-error"
+            />
+            @if (invalid("codigo")) {
+              <div id="edit-code-error" class="invalid-feedback">
+                Ingresa un entero entre 1 y {{ maxCode }}.
+              </div>
+            }
+          </div>
+          <div class="col-md-8">
+            <label class="form-label" for="edit-catalog-name">Nombre</label
+            ><input
+              id="edit-catalog-name"
+              class="form-control"
+              formControlName="nombre"
+              maxlength="100"
+              [class.is-invalid]="invalid('nombre')"
+              aria-describedby="edit-name-error"
+            />
+            @if (invalid("nombre")) {
+              <div id="edit-name-error" class="invalid-feedback">
+                Ingresa un nombre de hasta 100 caracteres.
+              </div>
+            }
+          </div>
+          @if (resource() === "paises") {
+            <div class="col-md-6">
+              <label class="form-label" for="edit-iso1">ISO 1</label
+              ><input
+                id="edit-iso1"
+                class="form-control text-uppercase"
+                formControlName="iso1"
+                maxlength="5"
+                [class.is-invalid]="invalid('iso1')"
+              />
+              <div class="form-text">Hasta 5 caracteres.</div>
+              @if (invalid("iso1")) {
+                <div class="invalid-feedback">Ingresa el código ISO 1.</div>
+              }
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="edit-iso2">ISO 2</label
+              ><input
+                id="edit-iso2"
+                class="form-control text-uppercase"
+                formControlName="iso2"
+                maxlength="3"
+                [class.is-invalid]="invalid('iso2')"
+              />
+              <div class="form-text">Hasta 3 caracteres.</div>
+              @if (invalid("iso2")) {
+                <div class="invalid-feedback">Ingresa el código ISO 2.</div>
+              }
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="edit-capital">Capital</label
+              ><input
+                id="edit-capital"
+                class="form-control"
+                formControlName="capital"
+                maxlength="100"
+                [class.is-invalid]="invalid('capital')"
+              />
+              @if (invalid("capital")) {
+                <div class="invalid-feedback">
+                  Ingresa una capital de hasta 100 caracteres.
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="col-12">
+              <label class="form-label" for="edit-country">País</label
+              ><select
+                id="edit-country"
+                class="form-select"
+                formControlName="paisCodigo"
+                [class.is-invalid]="invalid('paisCodigo')"
+              >
+                <option [ngValue]="null">Selecciona un país</option>
+                @for (country of countries(); track country.codigo) {
+                  <option [ngValue]="country.codigo">
+                    {{ country.nombre }}
+                  </option>
+                }
+              </select>
+              @if (invalid("paisCodigo")) {
+                <div class="invalid-feedback">Selecciona un país.</div>
+              }
+            </div>
+            @if (resource() === "ciudades") {
+              <div class="col-12">
+                <label class="form-label" for="edit-department"
+                  >Departamento</label
+                ><select
+                  id="edit-department"
+                  class="form-select"
+                  formControlName="departamentoCodigo"
+                  [class.is-invalid]="invalid('departamentoCodigo')"
+                >
+                  <option [ngValue]="null">Selecciona un departamento</option>
+                  @for (
+                    department of availableDepartments;
+                    track department.codigo
+                  ) {
+                    <option [ngValue]="department.codigo">
+                      {{ department.nombre }}
+                    </option>
+                  }
+                </select>
+                @if (invalid("departamentoCodigo")) {
+                  <div class="invalid-feedback">
+                    Selecciona un departamento.
+                  </div>
+                }
+                @if (selectedCountry() && !availableDepartments.length) {
+                  <div class="form-text">
+                    No hay departamentos activos para este país.
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+        @if (item(); as record) {
+          <div class="subtle mt-4">
+            Estado: {{ record.active ? "Activo" : "Inactivo" }}
+            @if (record.creationDate) {
+              <br />Creado: {{ record.creationDate | date: "dd/MM/yyyy HH:mm" }}
+            }
+            @if (record.updatedDate) {
+              <br />Actualizado:
+              {{ record.updatedDate | date: "dd/MM/yyyy HH:mm" }}
+            }
+          </div>
+        }
+      </fieldset>
+      <div class="form-footer justify-content-end">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          [disabled]="saving()"
+          (click)="close()"
+        >
+          {{ readonly ? "Cerrar" : "Cancelar" }}
+        </button>
+        @if (!readonly) {
+          <button class="btn btn-primary" type="submit" [disabled]="saving()">
+            {{
+              saving()
+                ? "Guardando…"
+                : code() !== null
+                  ? "Guardar cambios"
+                  : "Crear " + noun
+            }}
+          </button>
+        }
+      </div>
+    </form>
+  }
+</dialog>
