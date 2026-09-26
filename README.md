@@ -2,6 +2,8 @@
 
 Frontend Angular 21 standalone con formularios reactivos, Bootstrap 5.3 y CSS. Consume la API existente a través de `/api`.
 
+La URL base está centralizada en `src/app/core/api.config.ts`. El valor predeterminado `/api` funciona tanto con el proxy de desarrollo como con Nginx en Docker. Para apuntar directamente a otra dirección se cambia únicamente `API_BASE_URL`; una URL absoluta requiere que el backend permita CORS para el origen del frontend.
+
 ## Desarrollo
 
 Requiere Node.js 22.12 o superior dentro de la rama 22 y npm.

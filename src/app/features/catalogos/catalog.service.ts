@@ -2,6 +2,7 @@ import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { expand, reduce, EMPTY } from "rxjs";
 import { Page, params } from "../../core/api";
+import { apiUrl } from "../../core/api.config";
 export interface CatalogItem {
   active: boolean;
   creationDate?: string;
@@ -39,22 +40,22 @@ export class CatalogService {
     });
   }
   get(resource: CatalogResource, code: number) {
-    return this.http.get<CatalogItem>(`/api/${resource}/${code}`);
+    return this.http.get<CatalogItem>(apiUrl(`${resource}/${code}`));
   }
   create(resource: CatalogResource, data: CatalogCreate) {
-    return this.http.post<CatalogItem>(`/api/${resource}`, data);
+    return this.http.post<CatalogItem>(apiUrl(resource), data);
   }
   update(resource: CatalogResource, code: number, data: CatalogUpdate) {
-    return this.http.put<CatalogItem>(`/api/${resource}/${code}`, data);
+    return this.http.put<CatalogItem>(apiUrl(`${resource}/${code}`), data);
   }
   deactivate(resource: CatalogResource, code: number) {
-    return this.http.delete<void>(`/api/${resource}/${code}`);
+    return this.http.delete<void>(apiUrl(`${resource}/${code}`));
   }
   list(
     resource: CatalogResource,
     filters: Record<string, string | number | null | undefined>,
   ) {
-    return this.http.get<Page<CatalogItem>>(`/api/${resource}`, {
+    return this.http.get<Page<CatalogItem>>(apiUrl(resource), {
       params: params(filters),
     });
   }
@@ -66,7 +67,7 @@ export class CatalogService {
     filters: Record<string, number | string | undefined> = {},
   ) {
     const page = (pageNumber: number) =>
-      this.http.get<Page<CatalogItem>>(`/api/${resource}`, {
+      this.http.get<Page<CatalogItem>>(apiUrl(resource), {
         params: params({ ...filters, pageSize: 100, pageNumber }),
       });
     return page(1).pipe(
