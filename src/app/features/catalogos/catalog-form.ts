@@ -188,11 +188,11 @@ export class CatalogForm implements OnInit {
     const update: CatalogUpdate =
       this.resource() === "paises"
         ? {
-            nombre: raw.nombre.trim(),
-            iso1: raw.iso1.trim().toUpperCase(),
-            iso2: raw.iso2.trim().toUpperCase(),
-            capital: raw.capital.trim(),
-          }
+          nombre: raw.nombre.trim(),
+          iso1: raw.iso1.trim().toUpperCase(),
+          iso2: raw.iso2.trim().toUpperCase(),
+          capital: raw.capital.trim(),
+        }
         : { nombre: raw.nombre.trim() };
     try {
       let result: CatalogItem;
@@ -206,15 +206,15 @@ export class CatalogForm implements OnInit {
             ? ({ ...update, codigo: raw.codigo! } as CatalogCreate)
             : this.resource() === "departamentos"
               ? {
-                  nombre: raw.nombre.trim(),
-                  codigo: raw.codigo!,
-                  paisCodigo: raw.paisCodigo!,
-                }
+                nombre: raw.nombre.trim(),
+                codigo: raw.codigo!,
+                paisCodigo: raw.paisCodigo!,
+              }
               : {
-                  nombre: raw.nombre.trim(),
-                  codigo: raw.codigo!,
-                  departamentoCodigo: raw.departamentoCodigo!,
-                };
+                nombre: raw.nombre.trim(),
+                codigo: raw.codigo!,
+                departamentoCodigo: raw.departamentoCodigo!,
+              };
         result = await this.read(this.api.create(this.resource(), create));
       }
       this.saved.emit(result);

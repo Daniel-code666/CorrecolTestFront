@@ -5,6 +5,7 @@ export interface Page<T> {
   pageNumber: number;
   pageSize: number;
 }
+
 export function params(
   values: Record<string, string | number | boolean | null | undefined>,
 ): HttpParams {
@@ -14,6 +15,7 @@ export function params(
       result = result.set(key, String(value));
   return result;
 }
+
 export function errorMessage(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0)

@@ -4,27 +4,21 @@
     <h1>Clientes</h1>
     <p>Consulta y administra la información de tus clientes.</p>
   </div>
-  <a class="btn btn-primary" routerLink="/clientes/nuevo"
-    ><span aria-hidden="true">＋</span> Nuevo cliente</a
-  >
+  <a class="btn btn-primary" routerLink="/clientes/nuevo"><span aria-hidden="true">＋</span> Nuevo cliente</a>
 </div>
 @if (notice()) {
-  <div class="alert alert-success d-flex justify-content-between" role="status">
-    {{ notice()
-    }}<button
-      class="btn-close"
-      aria-label="Cerrar mensaje"
-      (click)="notice.set('')"
-    ></button>
-  </div>
+<div class="alert alert-success d-flex justify-content-between" role="status">
+  {{ notice()
+  }}<button class="btn-close" aria-label="Cerrar mensaje" (click)="notice.set('')"></button>
+</div>
 }
 @if (error()) {
-  <div class="alert alert-danger" role="alert">
-    {{ error() }}
-    <button class="btn btn-sm btn-outline-danger ms-2" (click)="retry()">
-      Reintentar consulta
-    </button>
-  </div>
+<div class="alert alert-danger" role="alert">
+  {{ error() }}
+  <button class="btn btn-sm btn-outline-danger ms-2" (click)="retry()">
+    Reintentar consulta
+  </button>
+</div>
 }
 <section class="surface mb-4" aria-labelledby="filters-title">
   <div class="surface-heading">
@@ -34,42 +28,26 @@
   <form [formGroup]="filters" (ngSubmit)="search()" class="p-4">
     <div class="row g-3">
       <div class="col-md-6 col-xl-3">
-        <label for="search-name" class="form-label">Razón social</label
-        ><input
-          id="search-name"
-          class="form-control"
-          formControlName="razonSocial"
-          maxlength="150"
-          placeholder="Buscar por nombre"
-        />
+        <label for="search-name" class="form-label">Razón social</label><input id="search-name" class="form-control"
+          formControlName="razonSocial" maxlength="150" placeholder="Buscar por nombre" />
       </div>
       <div class="col-md-6 col-xl-3">
-        <label for="search-number" class="form-label">Identificación</label
-        ><input
-          id="search-number"
-          class="form-control"
-          formControlName="numeroIdentificacion"
-          maxlength="30"
-          placeholder="Número de identificación"
-        />
+        <label for="search-number" class="form-label">Identificación</label><input id="search-number"
+          class="form-control" formControlName="numeroIdentificacion" maxlength="30"
+          placeholder="Número de identificación" />
       </div>
       <div class="col-md-6 col-xl-3">
-        <label for="search-type" class="form-label"
-          >Tipo de identificación</label
-        ><select
-          id="search-type"
-          class="form-select"
-          formControlName="tipoIdentificacion"
-        >
+        <label for="search-type" class="form-label">Tipo de identificación</label><select id="search-type"
+          class="form-select" formControlName="tipoIdentificacion">
           <option value="">Todos los tipos</option>
           @for (type of types; track type.value) {
-            <option [value]="type.value">{{ type.label }}</option>
+          <option [value]="type.value">{{ type.label }}</option>
           }
         </select>
       </div>
       <div class="col-md-6 col-xl-3">
-        <label for="search-state" class="form-label">Estado</label
-        ><select id="search-state" class="form-select" formControlName="active">
+        <label for="search-state" class="form-label">Estado</label><select id="search-state" class="form-select"
+          formControlName="active">
           <option value="true">Activos</option>
           <option value="false">Inactivos</option>
           <option value="">Todos los estados</option>
@@ -77,150 +55,109 @@
       </div>
     </div>
     <div class="filter-actions">
-      <button class="btn btn-primary" [disabled]="loading()">Buscar</button
-      ><button
-        class="btn btn-outline-secondary"
-        type="button"
-        (click)="clear()"
-      >
+      <button class="btn btn-primary" [disabled]="loading()">Buscar</button><button class="btn btn-outline-secondary"
+        type="button" (click)="clear()">
         Limpiar filtros
       </button>
     </div>
   </form>
 </section>
-<section
-  class="surface"
-  aria-labelledby="list-title"
-  [attr.aria-busy]="loading()"
->
+<section class="surface" aria-labelledby="list-title" [attr.aria-busy]="loading()">
   <div class="surface-heading">
     <div class="d-flex align-items-center gap-2">
       <h2 id="list-title">Directorio de clientes</h2>
       <span class="count-badge">{{ total() }}</span>
     </div>
-    <button
-      class="btn btn-outline-secondary btn-sm"
-      (click)="export()"
-      [disabled]="exporting()"
-    >
+    <button class="btn btn-outline-secondary btn-sm" (click)="export()" [disabled]="exporting()">
       {{ exporting() ? "Exportando…" : "↓ Exportar Excel" }}
     </button>
   </div>
   @if (loading()) {
-    <div class="empty-state" role="status">
-      <span class="spinner-border text-primary mb-3"></span>
-      <p>Cargando clientes…</p>
-    </div>
+  <div class="empty-state" role="status">
+    <span class="spinner-border text-primary mb-3"></span>
+    <p>Cargando clientes…</p>
+  </div>
   } @else if (listFailed()) {
-    <div class="empty-state">
-      <h3>No se pudo cargar el directorio</h3>
-      <p>Intenta consultar de nuevo.</p>
-    </div>
+  <div class="empty-state">
+    <h3>No se pudo cargar el directorio</h3>
+    <p>Intenta consultar de nuevo.</p>
+  </div>
   } @else if (!clients().length) {
-    <div class="empty-state">
-      <div class="empty-icon" aria-hidden="true">▤</div>
-      <h3>No hay clientes para mostrar</h3>
-      <p>Crea un cliente o ajusta los filtros de búsqueda.</p>
-      <a routerLink="/clientes/nuevo" class="btn btn-outline-primary"
-        >Crear cliente</a
-      >
-    </div>
+  <div class="empty-state">
+    <div class="empty-icon" aria-hidden="true">▤</div>
+    <h3>No hay clientes para mostrar</h3>
+    <p>Crea un cliente o ajusta los filtros de búsqueda.</p>
+    <a routerLink="/clientes/nuevo" class="btn btn-outline-primary">Crear cliente</a>
+  </div>
   } @else {
-    <div class="table-responsive">
-      <table class="table client-table align-middle mb-0">
-        <thead>
-          <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Razón social</th>
-            <th scope="col">Tipo de identificación</th>
-            <th scope="col">Número de identificación</th>
-            <th scope="col">País</th>
-            <th scope="col">Departamento</th>
-            <th scope="col">Ciudad</th>
-            <th scope="col">Estado</th>
-            <th scope="col" class="text-end">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (client of clients(); track client.id) {
-            <tr>
-              <td>{{ client.id }}</td>
-              <td>
-                <strong class="client-name">{{ client.razonSocial }}</strong>
-              </td>
-              <td>{{ typeLabel(client.tipoIdentificacion) }}</td>
-              <td>{{ client.numeroIdentificacion }}</td>
-              <td>{{ client.paisNombre }}</td>
-              <td>{{ client.departamentoNombre || "—" }}</td>
-              <td>{{ client.ciudadNombre || "—" }}</td>
-              <td>
-                <span class="state-badge" [class.inactive]="!client.active">{{
-                  client.active ? "Activo" : "Inactivo"
-                }}</span>
-              </td>
-              <td class="text-end text-nowrap">
-                @if (client.active) {
-                  <a
-                    class="btn btn-sm btn-outline-secondary me-2"
-                    [routerLink]="['/clientes', client.id, 'editar']"
-                    [attr.aria-label]="'Editar ' + client.razonSocial"
-                    >Editar</a
-                  ><button
-                    class="btn btn-sm btn-link text-danger"
-                    (click)="selected.set(client)"
-                    [attr.aria-label]="'Desactivar ' + client.razonSocial"
-                  >
-                    Desactivar
-                  </button>
-                } @else {
-                  <span class="subtle">Solo consulta</span>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+  <div class="table-responsive">
+    <table class="table client-table align-middle mb-0">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Razón social</th>
+          <th scope="col">Tipo de identificación</th>
+          <th scope="col">Número de identificación</th>
+          <th scope="col">País</th>
+          <th scope="col">Departamento</th>
+          <th scope="col">Ciudad</th>
+          <th scope="col">Estado</th>
+          <th scope="col" class="text-end">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (client of clients(); track client.id) {
+        <tr>
+          <td>{{ client.id }}</td>
+          <td>
+            <strong class="client-name">{{ client.razonSocial }}</strong>
+          </td>
+          <td>{{ typeLabel(client.tipoIdentificacion) }}</td>
+          <td>{{ client.numeroIdentificacion }}</td>
+          <td>{{ client.paisNombre }}</td>
+          <td>{{ client.departamentoNombre || "—" }}</td>
+          <td>{{ client.ciudadNombre || "—" }}</td>
+          <td>
+            <span class="state-badge" [class.inactive]="!client.active">{{
+              client.active ? "Activo" : "Inactivo"
+              }}</span>
+          </td>
+          <td class="text-end text-nowrap">
+            @if (client.active) {
+            <a class="btn btn-sm btn-outline-secondary me-2" [routerLink]="['/clientes', client.id, 'editar']"
+              [attr.aria-label]="'Editar ' + client.razonSocial">Editar</a><button
+              class="btn btn-sm btn-link text-danger" (click)="selected.set(client)"
+              [attr.aria-label]="'Desactivar ' + client.razonSocial">
+              Desactivar
+            </button>
+            } @else {
+            <span class="subtle">Solo consulta</span>
+            }
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
   }
   <div class="table-footer">
     <div class="d-flex align-items-center flex-wrap gap-3">
       <div class="d-flex align-items-center gap-2">
-        <label for="client-page-size" class="subtle text-nowrap"
-          >Clientes por página</label
-        >
-        <select
-          id="client-page-size"
-          #pageSizeSelect
-          class="form-select form-select-sm w-auto"
-          [value]="pageSize"
-          [disabled]="loading()"
-          (change)="changePageSize(pageSizeSelect.value)"
-        >
+        <label for="client-page-size" class="subtle text-nowrap">Clientes por página</label>
+        <select id="client-page-size" #pageSizeSelect class="form-select form-select-sm w-auto" [value]="pageSize"
+          [disabled]="loading()" (change)="changePageSize(pageSizeSelect.value)">
           <option value="10">10</option>
           <option value="20">20</option>
           <option value="30">30</option>
         </select>
       </div>
-      <span class="subtle" aria-live="polite"
-        >{{ first }}–{{ last }} de {{ total() }} clientes</span
-      >
+      <span class="subtle" aria-live="polite">{{ first }}–{{ last }} de {{ total() }} clientes</span>
     </div>
-    <nav
-      aria-label="Paginación de clientes"
-      class="d-flex align-items-center gap-3"
-    >
-      <button
-        class="btn btn-sm btn-outline-secondary"
-        [disabled]="page === 1 || loading()"
-        (click)="changePage(page - 1)"
-      >
-        Anterior</button
-      ><span class="subtle">{{ page }} / {{ pages }}</span
-      ><button
-        class="btn btn-sm btn-outline-secondary"
-        [disabled]="page >= pages || loading()"
-        (click)="changePage(page + 1)"
-      >
+    <nav aria-label="Paginación de clientes" class="d-flex align-items-center gap-3">
+      <button class="btn btn-sm btn-outline-secondary" [disabled]="page === 1 || loading()"
+        (click)="changePage(page - 1)">
+        Anterior</button><span class="subtle">{{ page }} / {{ pages }}</span><button
+        class="btn btn-sm btn-outline-secondary" [disabled]="page >= pages || loading()" (click)="changePage(page + 1)">
         Siguiente
       </button>
     </nav>
@@ -231,32 +168,17 @@
   seleccionados.
 </p>
 @if (selected(); as client) {
-  <dialog
-    appModal
-    class="surface confirmation"
-    (cancel)="deactivating() ? $event.preventDefault() : selected.set(null)"
-    aria-labelledby="confirm-title"
-    aria-describedby="confirm-description"
-  >
-    <h2 id="confirm-title">Desactivar cliente</h2>
-    <p id="confirm-description">
-      ¿Deseas desactivar a <strong>{{ client.razonSocial }}</strong
-      >? Sus datos se conservarán, pero no podrás editarlo.
-    </p>
-    <div class="d-flex justify-content-end gap-2">
-      <button
-        class="btn btn-outline-secondary"
-        [disabled]="deactivating()"
-        (click)="selected.set(null)"
-      >
-        Cancelar</button
-      ><button
-        class="btn btn-danger"
-        [disabled]="deactivating()"
-        (click)="deactivate()"
-      >
-        {{ deactivating() ? "Desactivando…" : "Confirmar desactivación" }}
-      </button>
-    </div>
-  </dialog>
+<dialog appModal class="surface confirmation" (cancel)="deactivating() ? $event.preventDefault() : selected.set(null)"
+  aria-labelledby="confirm-title" aria-describedby="confirm-description">
+  <h2 id="confirm-title">Desactivar cliente</h2>
+  <p id="confirm-description">
+    ¿Deseas desactivar a <strong>{{ client.razonSocial }}</strong>? Sus datos se conservarán, pero no podrás editarlo.
+  </p>
+  <div class="d-flex justify-content-end gap-2">
+    <button class="btn btn-outline-secondary" [disabled]="deactivating()" (click)="selected.set(null)">
+      Cancelar</button><button class="btn btn-danger" [disabled]="deactivating()" (click)="deactivate()">
+      {{ deactivating() ? "Desactivando…" : "Confirmar desactivación" }}
+    </button>
+  </div>
+</dialog>
 }

@@ -7,9 +7,9 @@
     <h1>{{ id ? "Editar cliente" : "Nuevo cliente" }}</h1>
     <p>
       {{
-        id
-          ? "Actualiza los datos del cliente."
-          : "Completa la información para
+      id
+      ? "Actualiza los datos del cliente."
+      : "Completa la información para
       registrar un cliente."
       }}
     </p>
@@ -17,213 +17,171 @@
   <span class="subtle">* Campos obligatorios</span>
 </div>
 @if (error()) {
-  <div class="alert alert-danger" role="alert">
-    {{ error() }}
-    @if (loading() === false && !initialized()) {
-      <button class="btn btn-sm btn-outline-danger" (click)="initialize()">
-        Reintentar
-      </button>
-    }
-  </div>
+<div class="alert alert-danger" role="alert">
+  {{ error() }}
+  @if (loading() === false && !initialized()) {
+  <button class="btn btn-sm btn-outline-danger" (click)="initialize()">
+    Reintentar
+  </button>
+  }
+</div>
 }
 @if (inactive()) {
-  <div class="alert alert-warning" role="status">
-    Este cliente está inactivo. Sus datos están disponibles solo para consulta.
-  </div>
+<div class="alert alert-warning" role="status">
+  Este cliente está inactivo. Sus datos están disponibles solo para consulta.
+</div>
 }
 @if (loading()) {
-  <div class="surface empty-state" role="status">
-    <span class="spinner-border text-primary"></span>
-    <p class="mt-3">Cargando información…</p>
-  </div>
+<div class="surface empty-state" role="status">
+  <span class="spinner-border text-primary"></span>
+  <p class="mt-3">Cargando información…</p>
+</div>
 } @else if (initialized()) {
-  <form [formGroup]="form" (ngSubmit)="save()" class="surface client-form">
-    <section class="form-section">
-      <div class="section-intro">
-        <span class="section-number">01</span>
-        <div>
-          <h2>Información del cliente</h2>
-          <p>Datos de identificación y razón social.</p>
-        </div>
+<form [formGroup]="form" (ngSubmit)="save()" class="surface client-form">
+  <section class="form-section">
+    <div class="section-intro">
+      <span class="section-number">01</span>
+      <div>
+        <h2>Información del cliente</h2>
+        <p>Datos de identificación y razón social.</p>
       </div>
-      <div class="row g-4">
-        <div class="col-md-5">
-          <label class="form-label" for="type">Tipo de identificación *</label
-          ><select
-            id="type"
-            class="form-select"
-            formControlName="tipoIdentificacion"
-          >
-            @for (type of types; track type.value) {
-              <option [value]="type.value">{{ type.label }}</option>
-            }
-          </select>
-        </div>
-        <div class="col-md-7">
-          <label class="form-label" for="number"
-            >Número de identificación *</label
-          ><input
-            id="number"
-            class="form-control"
-            formControlName="numeroIdentificacion"
-            maxlength="30"
-            placeholder="Ej. 900123456"
-            [class.is-invalid]="invalid('numeroIdentificacion')"
-            aria-describedby="number-error"
-          />
-          @if (invalid("numeroIdentificacion")) {
-            <div class="invalid-feedback" id="number-error">
-              Ingresa una identificación de hasta 30 caracteres.
-            </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-5">
+        <label class="form-label" for="type">Tipo de identificación *</label><select id="type" class="form-select"
+          formControlName="tipoIdentificacion">
+          @for (type of types; track type.value) {
+          <option [value]="type.value">{{ type.label }}</option>
           }
-        </div>
-        <div class="col-12">
-          <label class="form-label" for="name">Razón social *</label
-          ><input
-            id="name"
-            class="form-control"
-            formControlName="razonSocial"
-            maxlength="150"
-            placeholder="Nombre completo o razón social"
-            [class.is-invalid]="invalid('razonSocial')"
-            aria-describedby="name-error"
-          />
-          @if (invalid("razonSocial")) {
-            <div class="invalid-feedback" id="name-error">
-              Ingresa una razón social de hasta 150 caracteres.
-            </div>
-          }
-        </div>
+        </select>
       </div>
-    </section>
-    <section class="form-section">
-      <div class="section-intro">
-        <span class="section-number">02</span>
-        <div>
-          <h2>Ubicación</h2>
-          <p>
-            Selecciona el país y las opciones disponibles para su ubicación.
-          </p>
+      <div class="col-md-7">
+        <label class="form-label" for="number">Número de identificación *</label><input id="number" class="form-control"
+          formControlName="numeroIdentificacion" maxlength="30" placeholder="Ej. 900123456"
+          [class.is-invalid]="invalid('numeroIdentificacion')" aria-describedby="number-error" />
+        @if (invalid("numeroIdentificacion")) {
+        <div class="invalid-feedback" id="number-error">
+          Ingresa una identificación de hasta 30 caracteres.
         </div>
+        }
       </div>
-      @if (geoError()) {
-        <div class="alert alert-danger" role="alert">
-          {{ geoError() }}
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-danger"
-            (click)="countryChanged(form.controls.paisCodigo.value)"
-          >
-            Recargar ubicación
-          </button>
+      <div class="col-12">
+        <label class="form-label" for="name">Razón social *</label><input id="name" class="form-control"
+          formControlName="razonSocial" maxlength="150" placeholder="Nombre completo o razón social"
+          [class.is-invalid]="invalid('razonSocial')" aria-describedby="name-error" />
+        @if (invalid("razonSocial")) {
+        <div class="invalid-feedback" id="name-error">
+          Ingresa una razón social de hasta 150 caracteres.
         </div>
-      }
-      <div class="row g-4">
-        <div class="col-md-4">
-          <label class="form-label" for="country">País *</label
-          ><select
-            id="country"
-            class="form-select"
-            formControlName="paisCodigo"
-            [class.is-invalid]="invalid('paisCodigo')"
-          >
-            <option [ngValue]="null">Selecciona un país</option>
-            @for (item of countries(); track item.codigo) {
-              <option [ngValue]="item.codigo">{{ item.nombre }}</option>
-            }
-          </select>
-          @if (invalid("paisCodigo")) {
-            <div class="invalid-feedback">Selecciona un país.</div>
-          }
-        </div>
-        <div class="col-md-4">
-          <label class="form-label" for="department"
-            >Departamento {{ departments().length ? "*" : "" }}</label
-          ><select
-            id="department"
-            class="form-select"
-            formControlName="departamentoCodigo"
-            [class.is-invalid]="invalid('departamentoCodigo')"
-          >
-            <option [ngValue]="null">
-              {{
-                loadingDepartments()
-                  ? "Cargando…"
-                  : "Selecciona un departamento"
-              }}
-            </option>
-            @for (item of departments(); track item.codigo) {
-              <option [ngValue]="item.codigo">{{ item.nombre }}</option>
-            }
-          </select>
-          @if (invalid("departamentoCodigo")) {
-            <div class="invalid-feedback">Selecciona un departamento.</div>
-          }
-          @if (
-            form.controls.paisCodigo.value &&
-            !loadingDepartments() &&
-            !departments().length &&
-            !geoError()
-          ) {
-            <div class="form-text">
-              No hay departamentos registrados para este país.
-            </div>
-          }
-        </div>
-        <div class="col-md-4">
-          <label class="form-label" for="city"
-            >Ciudad / Municipio {{ cities().length ? "*" : "" }}</label
-          ><select
-            id="city"
-            class="form-select"
-            formControlName="ciudadCodigo"
-            [class.is-invalid]="invalid('ciudadCodigo')"
-          >
-            <option [ngValue]="null">
-              {{ loadingCities() ? "Cargando…" : "Selecciona una ciudad" }}
-            </option>
-            @for (item of cities(); track item.codigo) {
-              <option [ngValue]="item.codigo">{{ item.nombre }}</option>
-            }
-          </select>
-          @if (invalid("ciudadCodigo")) {
-            <div class="invalid-feedback">Selecciona una ciudad.</div>
-          }
-          @if (
-            form.controls.departamentoCodigo.value &&
-            !loadingCities() &&
-            !cities().length &&
-            !geoError()
-          ) {
-            <div class="form-text">
-              No hay ciudades registradas para este departamento.
-            </div>
-          }
-        </div>
+        }
       </div>
-    </section>
-    <div class="form-footer">
-      <span class="subtle">Verifica los datos antes de guardar.</span>
-      <div class="d-flex gap-2">
-        <a routerLink="/clientes" class="btn btn-outline-secondary">Cancelar</a>
-        @if (!inactive()) {
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="
+    </div>
+  </section>
+  <section class="form-section">
+    <div class="section-intro">
+      <span class="section-number">02</span>
+      <div>
+        <h2>Ubicación</h2>
+        <p>
+          Selecciona el país y las opciones disponibles para su ubicación.
+        </p>
+      </div>
+    </div>
+    @if (geoError()) {
+    <div class="alert alert-danger" role="alert">
+      {{ geoError() }}
+      <button type="button" class="btn btn-sm btn-outline-danger"
+        (click)="countryChanged(form.controls.paisCodigo.value)">
+        Recargar ubicación
+      </button>
+    </div>
+    }
+    <div class="row g-4">
+      <div class="col-md-4">
+        <label class="form-label" for="country">País *</label><select id="country" class="form-select"
+          formControlName="paisCodigo" [class.is-invalid]="invalid('paisCodigo')">
+          <option [ngValue]="null">Selecciona un país</option>
+          @for (item of countries(); track item.codigo) {
+          <option [ngValue]="item.codigo">{{ item.nombre }}</option>
+          }
+        </select>
+        @if (invalid("paisCodigo")) {
+        <div class="invalid-feedback">Selecciona un país.</div>
+        }
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="department">Departamento {{ departments().length ? "*" : "" }}</label><select
+          id="department" class="form-select" formControlName="departamentoCodigo"
+          [class.is-invalid]="invalid('departamentoCodigo')">
+          <option [ngValue]="null">
+            {{
+            loadingDepartments()
+            ? "Cargando…"
+            : "Selecciona un departamento"
+            }}
+          </option>
+          @for (item of departments(); track item.codigo) {
+          <option [ngValue]="item.codigo">{{ item.nombre }}</option>
+          }
+        </select>
+        @if (invalid("departamentoCodigo")) {
+        <div class="invalid-feedback">Selecciona un departamento.</div>
+        }
+        @if (
+        form.controls.paisCodigo.value &&
+        !loadingDepartments() &&
+        !departments().length &&
+        !geoError()
+        ) {
+        <div class="form-text">
+          No hay departamentos registrados para este país.
+        </div>
+        }
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="city">Ciudad / Municipio {{ cities().length ? "*" : "" }}</label><select
+          id="city" class="form-select" formControlName="ciudadCodigo" [class.is-invalid]="invalid('ciudadCodigo')">
+          <option [ngValue]="null">
+            {{ loadingCities() ? "Cargando…" : "Selecciona una ciudad" }}
+          </option>
+          @for (item of cities(); track item.codigo) {
+          <option [ngValue]="item.codigo">{{ item.nombre }}</option>
+          }
+        </select>
+        @if (invalid("ciudadCodigo")) {
+        <div class="invalid-feedback">Selecciona una ciudad.</div>
+        }
+        @if (
+        form.controls.departamentoCodigo.value &&
+        !loadingCities() &&
+        !cities().length &&
+        !geoError()
+        ) {
+        <div class="form-text">
+          No hay ciudades registradas para este departamento.
+        </div>
+        }
+      </div>
+    </div>
+  </section>
+  <div class="form-footer">
+    <span class="subtle">Verifica los datos antes de guardar.</span>
+    <div class="d-flex gap-2">
+      <a routerLink="/clientes" class="btn btn-outline-secondary">Cancelar</a>
+      @if (!inactive()) {
+      <button type="submit" class="btn btn-primary" [disabled]="
               saving() ||
               loadingDepartments() ||
               loadingCities() ||
               !!geoError() ||
               !initialized()
-            "
-          >
-            {{
-              saving() ? "Guardando…" : id ? "Guardar cambios" : "Crear cliente"
-            }}
-          </button>
-        }
-      </div>
+            ">
+        {{
+        saving() ? "Guardando…" : id ? "Guardar cambios" : "Crear cliente"
+        }}
+      </button>
+      }
     </div>
-  </form>
+  </div>
+</form>
 }
