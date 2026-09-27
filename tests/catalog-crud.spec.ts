@@ -100,11 +100,15 @@ test("CRUD real de país, departamento y ciudad, restricciones y consulta de ina
     // El país creado y editado debe estar disponible para clientes sin recargar la aplicación.
     await page.getByRole("link", { name: "Clientes", exact: true }).click();
     await page
-      .getByRole("link", { name: "Nuevo cliente", exact: false })
+      .getByRole("button", { name: "Nuevo cliente", exact: false })
       .click();
-    await page
+    const clientDialog = page.getByRole("dialog", { name: "Nuevo cliente" });
+    await clientDialog
       .getByLabel("País", { exact: false })
       .selectOption({ label: `${countryName} editado` });
+    await clientDialog
+      .getByRole("button", { name: "Cerrar formulario" })
+      .click();
 
     await page
       .getByRole("link", { name: "Departamentos", exact: true })

@@ -1,33 +1,42 @@
-import { Component, DestroyRef, inject, signal } from "@angular/core";
+import {
+  Component,
+  DestroyRef,
+  OnInit,
+  inject,
+  input,
+  output,
+  signal,
+} from "@angular/core";
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { firstValueFrom } from "rxjs";
 import { ClientService } from "./client.service";
 import {
+  Client,
   ClientWrite,
   IdentificationType,
   identificationTypes,
 } from "./client.models";
 import { CatalogItem, CatalogService } from "../catalogos/catalog.service";
 import { errorMessage } from "../../core/api";
+import { ModalDirective } from "../../core/modal.directive";
 @Component({
   selector: "app-client-form",
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, ModalDirective],
   templateUrl: "./client-form.html",
 })
-export class ClientForm {
+export class ClientForm implements OnInit {
+  readonly id = input<number | null>(null);
+  readonly saved = output<Client>();
+  readonly closed = output<void>();
   private api = inject(ClientService);
   private catalogs = inject(CatalogService);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
   private destroy = inject(DestroyRef);
-  readonly id = Number(this.route.snapshot.paramMap.get("id")) || null;
   readonly types = identificationTypes;
   readonly loading = signal(true);
   readonly saving = signal(false);
@@ -74,13 +83,15 @@ export class ClientForm {
     }),
   });
   constructor() {
-    void this.initialize();
     this.form.controls.paisCodigo.valueChanges
       .pipe(takeUntilDestroyed())
       .subscribe((value) => void this.countryChanged(value));
     this.form.controls.departamentoCodigo.valueChanges
       .pipe(takeUntilDestroyed())
       .subscribe((value) => void this.departmentChanged(value));
+  }
+  ngOnInit() {
+    void this.initialize();
   }
   private async read<T>(source: import("rxjs").Observable<T>) {
     return firstValueFrom(source.pipe(takeUntilDestroyed(this.destroy)));
@@ -91,8 +102,9 @@ export class ClientForm {
     this.error.set("");
     try {
       this.countries.set(await this.read(this.catalogs.countries()));
-      if (this.id) {
-        const client = await this.read(this.api.get(this.id));
+      const id = this.id();
+      if (id !== null) {
+        const client = await this.read(this.api.get(id));
         this.inactive.set(!client.active);
         this.form.patchValue(client, { emitEvent: false });
         await this.countryChanged(
@@ -179,6 +191,13 @@ export class ClientForm {
     const control = this.form.controls[name];
     return control.touched && control.invalid;
   }
+  close() {
+    if (!this.saving()) this.closed.emit();
+  }
+  cancel(event: Event) {
+    event.preventDefault();
+    this.close();
+  }
   async save() {
     this.form.markAllAsTouched();
     if (
@@ -202,12 +221,11 @@ export class ClientForm {
       razonSocial: raw.razonSocial.trim(),
     };
     try {
-      await this.read(
-        this.id ? this.api.update(this.id, data) : this.api.create(data),
+      const id = this.id();
+      const result = await this.read(
+        id !== null ? this.api.update(id, data) : this.api.create(data),
       );
-      await this.router.navigate(["/clientes"], {
-        queryParams: { guardado: this.id ? "actualizado" : "creado" },
-      });
+      this.saved.emit(result);
     } catch (e) {
       this.error.set(errorMessage(e));
     } finally {

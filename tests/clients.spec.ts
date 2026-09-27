@@ -17,49 +17,64 @@ test("crear, editar, exportar y desactivar con catálogos reales", async ({
     path: "artifacts/listado-desktop.png",
     fullPage: true,
   });
-  await page.getByRole("link", { name: "Nuevo cliente", exact: false }).click();
   await page
+    .getByRole("button", { name: "Nuevo cliente", exact: false })
+    .click();
+  const createDialog = page.getByRole("dialog", { name: "Nuevo cliente" });
+  await expect(createDialog).toBeVisible();
+  await createDialog
     .getByRole("button", { name: "Crear cliente", exact: true })
     .click();
-  await expect(page.getByText("Ingresa una razón social")).toBeVisible();
-  await page.getByLabel("Número de identificación").fill(number);
-  await page.getByLabel("Razón social").fill(name);
-  await page
+  await expect(
+    createDialog.getByText("Ingresa una razón social"),
+  ).toBeVisible();
+  await createDialog.getByLabel("Número de identificación").fill(number);
+  await createDialog.getByLabel("Razón social").fill(name);
+  await createDialog
     .getByLabel("País", { exact: false })
     .selectOption({ label: "COLOMBIA" });
-  await page
+  await createDialog
     .getByLabel("Departamento", { exact: false })
     .selectOption({ label: "ANTIOQUIA" });
-  await expect(page.locator("#city option")).toHaveCount(126);
-  await page
+  await expect(createDialog.locator("#city option")).toHaveCount(126);
+  await createDialog
     .getByLabel("Ciudad / Municipio", { exact: false })
     .selectOption({ label: "MEDELLIN" });
   await page.screenshot({
     path: "artifacts/formulario-desktop.png",
     fullPage: true,
   });
-  await page
+  await createDialog
     .getByRole("button", { name: "Crear cliente", exact: true })
     .click();
-  await expect(page.getByRole("status")).toContainText("creado correctamente");
+  await expect(
+    page.getByText("Cliente creado correctamente.", { exact: true }),
+  ).toBeVisible();
   await page.getByLabel("Identificación", { exact: true }).fill(number);
   await page.getByRole("button", { name: "Buscar", exact: true }).click();
-  await page.getByRole("link", { name: `Editar ${name}`, exact: true }).click();
-  await expect(page.getByLabel("Número de identificación")).toHaveValue(number);
-  await expect(page.locator("#city option:checked")).toHaveText("MEDELLIN");
   await page
+    .getByRole("button", { name: `Editar ${name}`, exact: true })
+    .click();
+  const editDialog = page.getByRole("dialog", { name: "Editar cliente" });
+  await expect(editDialog.getByLabel("Número de identificación")).toHaveValue(
+    number,
+  );
+  await expect(editDialog.locator("#city option:checked")).toHaveText(
+    "MEDELLIN",
+  );
+  await editDialog
     .getByLabel("País", { exact: false })
     .selectOption({ label: "AFGANISTÁN" });
   await expect(
-    page.getByLabel("Departamento", { exact: false }),
+    editDialog.getByLabel("Departamento", { exact: false }),
   ).toBeDisabled();
   await expect(
-    page.getByLabel("Ciudad / Municipio", { exact: false }),
+    editDialog.getByLabel("Ciudad / Municipio", { exact: false }),
   ).toBeDisabled();
-  await page.getByRole("button", { name: "Guardar cambios" }).click();
-  await expect(page.getByRole("status")).toContainText(
-    "actualizado correctamente",
-  );
+  await editDialog.getByRole("button", { name: "Guardar cambios" }).click();
+  await expect(
+    page.getByText("Cliente actualizado correctamente.", { exact: true }),
+  ).toBeVisible();
   await page.getByLabel("Identificación", { exact: true }).fill(number);
   await page.getByRole("button", { name: "Buscar", exact: true }).click();
   const download = page.waitForEvent("download");
@@ -72,9 +87,11 @@ test("crear, editar, exportar y desactivar con catálogos reales", async ({
     .click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByRole("button", { name: "Confirmar desactivación" }).click();
-  await expect(page.getByRole("status")).toContainText(
-    "desactivado correctamente",
-  );
+  await expect(
+    page.getByText("El cliente fue desactivado correctamente.", {
+      exact: true,
+    }),
+  ).toBeVisible();
   await page.getByLabel("Estado", { exact: true }).selectOption("false");
   await page.getByRole("button", { name: "Buscar", exact: true }).click();
   await expect(page.getByRole("cell", { name: "Solo consulta" })).toBeVisible();

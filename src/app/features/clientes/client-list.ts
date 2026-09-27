@@ -1,15 +1,15 @@
 import { Component, DestroyRef, inject, signal } from "@angular/core";
 import { FormControl, FormGroup, ReactiveFormsModule } from "@angular/forms";
-import { ActivatedRoute, RouterLink } from "@angular/router";
 import { ModalDirective } from "../../core/modal.directive";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Subject, startWith, switchMap, catchError, of } from "rxjs";
 import { ClientService, ClientFilters } from "./client.service";
 import { Client, identificationTypes, typeLabel } from "./client.models";
 import { errorMessage } from "../../core/api";
+import { ClientForm } from "./client-form";
 @Component({
   selector: "app-client-list",
-  imports: [RouterLink, ReactiveFormsModule, ModalDirective],
+  imports: [ReactiveFormsModule, ModalDirective, ClientForm],
   templateUrl: "./client-list.html",
 })
 export class ClientList {
@@ -27,6 +27,7 @@ export class ClientList {
   readonly exporting = signal(false);
   readonly deactivating = signal(false);
   readonly selected = signal<Client | null>(null);
+  readonly editing = signal<{ id: number | null } | null>(null);
   page = 1;
   pageSize = 10;
   filters = new FormGroup({
@@ -37,9 +38,6 @@ export class ClientList {
   });
   private applied: ClientFilters = { active: "true" };
   constructor() {
-    const saved = inject(ActivatedRoute).snapshot.queryParamMap.get("guardado");
-    if (saved === "creado" || saved === "actualizado")
-      this.notice.set(`Cliente ${saved} correctamente.`);
     this.refresh
       .pipe(
         startWith(undefined),
@@ -155,5 +153,13 @@ export class ClientList {
           this.error.set(errorMessage(e));
         },
       });
+  }
+  onSaved() {
+    const updated = this.editing()?.id !== null;
+    this.editing.set(null);
+    this.notice.set(
+      `Cliente ${updated ? "actualizado" : "creado"} correctamente.`,
+    );
+    this.refresh.next();
   }
 }

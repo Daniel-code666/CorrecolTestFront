@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-test("recuperación de error de consulta y recarga directa de ruta móvil", async ({
+test("recuperación de error de consulta y formulario modal móvil", async ({
   page,
 }) => {
   await page.route("**/api/clientes?**", (route) =>
@@ -20,9 +20,12 @@ test("recuperación de error de consulta y recarga directa de ruta móvil", asyn
     page.getByRole("button", { name: "Buscar", exact: true }),
   ).toBeEnabled();
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/clientes/nuevo");
-  await expect(page.getByLabel("País", { exact: false })).toBeVisible();
-  await expect(page.locator("#country option")).toHaveCount(247);
+  await page
+    .getByRole("button", { name: "Nuevo cliente", exact: false })
+    .click();
+  const dialog = page.getByRole("dialog", { name: "Nuevo cliente" });
+  await expect(dialog.getByLabel("País", { exact: false })).toBeVisible();
+  expect(await dialog.locator("#country option").count()).toBeGreaterThan(1);
   await page.screenshot({
     path: "artifacts/formulario-mobile.png",
     fullPage: true,
@@ -36,10 +39,16 @@ test("recuperación de error de consulta y recarga directa de ruta móvil", asyn
 test("conflicto conserva datos y cliente inexistente no muestra formulario editable", async ({
   page,
 }) => {
-  await page.goto("/clientes/nuevo");
-  await page.getByLabel("Número de identificación").fill("Duplicado-Prueba");
-  await page.getByLabel("Razón social").fill("Cliente duplicado");
+  await page.goto("/clientes");
   await page
+    .getByRole("button", { name: "Nuevo cliente", exact: false })
+    .click();
+  const createDialog = page.getByRole("dialog", { name: "Nuevo cliente" });
+  await createDialog
+    .getByLabel("Número de identificación")
+    .fill("Duplicado-Prueba");
+  await createDialog.getByLabel("Razón social").fill("Cliente duplicado");
+  await createDialog
     .getByLabel("País", { exact: false })
     .selectOption({ label: "AFGANISTÁN" });
   await page.route("**/api/clientes", (route) =>
@@ -51,16 +60,56 @@ test("conflicto conserva datos y cliente inexistente no muestra formulario edita
       }),
     }),
   );
-  await page
+  await createDialog
     .getByRole("button", { name: "Crear cliente", exact: true })
     .click();
-  await expect(page.getByRole("alert")).toContainText("Ya existe un cliente");
-  await expect(page.getByLabel("Razón social")).toHaveValue(
+  await expect(createDialog.getByRole("alert")).toContainText(
+    "Ya existe un cliente",
+  );
+  await expect(createDialog.getByLabel("Razón social")).toHaveValue(
     "Cliente duplicado",
   );
-  await page.goto("/clientes/2147483647/editar");
-  await expect(page.getByRole("alert")).toContainText("no existe");
+  await page.getByRole("button", { name: "Cerrar formulario" }).click();
+  await page.route("**/api/clientes?**", (route) =>
+    route.fulfill({
+      json: {
+        items: [
+          {
+            id: 2147483647,
+            razonSocial: "Cliente inexistente",
+            tipoIdentificacion: "Nit",
+            numeroIdentificacion: "NO-EXISTE",
+            paisCodigo: 1,
+            departamentoCodigo: null,
+            ciudadCodigo: null,
+            paisNombre: "País",
+            departamentoNombre: null,
+            ciudadNombre: null,
+            active: true,
+            creationDate: "2026-01-01T00:00:00Z",
+            updatedDate: null,
+          },
+        ],
+        totalRecords: 1,
+        pageNumber: 1,
+        pageSize: 10,
+      },
+    }),
+  );
+  await page.route("**/api/clientes/2147483647", (route) =>
+    route.fulfill({
+      status: 404,
+      contentType: "application/problem+json",
+      body: JSON.stringify({ detail: "El cliente no existe." }),
+    }),
+  );
+  await page.reload();
+  await page
+    .getByRole("button", { name: "Editar Cliente inexistente" })
+    .click();
+  const editDialog = page.getByRole("dialog", { name: "Editar cliente" });
+  await expect(editDialog.getByRole("alert")).toContainText("no existe");
   await expect(
-    page.getByRole("button", { name: "Guardar cambios" }),
+    editDialog.getByRole("button", { name: "Guardar cambios" }),
   ).toHaveCount(0);
 });

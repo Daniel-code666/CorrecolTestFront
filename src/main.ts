@@ -14,20 +14,6 @@ bootstrapApplication(App, {
               (m) => m.ClientList,
             ),
         },
-        {
-          path: "clientes/nuevo",
-          loadComponent: () =>
-            import("./app/features/clientes/client-form").then(
-              (m) => m.ClientForm,
-            ),
-        },
-        {
-          path: "clientes/:id/editar",
-          loadComponent: () =>
-            import("./app/features/clientes/client-form").then(
-              (m) => m.ClientForm,
-            ),
-        },
         ...(["paises", "departamentos", "ciudades"] as const).map(
           (resource) => ({
             path: resource,

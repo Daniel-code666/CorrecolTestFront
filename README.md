@@ -51,7 +51,8 @@ El estado se mantiene en los componentes mediante signals y formularios reactivo
 - El borrado de catálogos es lógico y requiere confirmación. Los inactivos se pueden consultar, pero no editar ni reactivar. La API rechaza la desactivación con clientes asociados (incluso inactivos) o dependencias activas; el diálogo muestra el motivo y conserva los datos.
 - Los formularios de creación y los clientes cargan opciones activas actualizadas, sin una caché persistente que oculte cambios. Las consultas incluyen nombres de padres inactivos para conservar el contexto de registros históricos.
 - Listado paginado, filtros por identificación, razón social, tipo y estado.
-- Creación y edición, validaciones, mensajes de éxito y errores del servidor.
+- Creación y edición en un diálogo modal, conservando filtros y página del listado; el formulario consulta por ID antes de editar.
+- Validaciones, mensajes de éxito y errores del servidor.
 - País, departamento y ciudad en cascada. Se consultan todas las páginas; las selecciones dependientes se limpian al cambiar su padre y se ignoran respuestas obsoletas.
 - Departamento/ciudad obligatorios solo si el catálogo tiene opciones. Identificación como texto, hasta 30 caracteres; razón social hasta 150.
 - Exportación Excel de todos los resultados de los filtros aplicados.
